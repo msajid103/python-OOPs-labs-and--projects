@@ -1,0 +1,320 @@
+import openpyxl
+wb = openpyxl.load_workbook("Facebook.xlsx")
+ws = wb["Sheet1"]
+ws2 = wb["Sheet2"]
+ws3 = wb["Sheet3"]
+ws4 = wb["Sheet4"]
+ws5 = wb["Sheet5"]
+ws6 = wb["Sheet6"]
+fix = [ws2,ws3,ws4,ws5,ws6]
+for i in fix:
+    i['A'][0].value = 'Full_NAME'
+header = ['Full_NAME', 'User_name', ' Date_birth', 'job', "study", 'status', 'other', 'Password', 'friendNotification',
+          'messageNotification'
+          '']
+for i in range(1, len(header) + 1):
+    ws.cell(row=1, column=i).value = header[i - 1]
+wb.save('Facebook.xlsx')
+class User:
+    def __init__(self):
+        self.name = None
+        self.user_name = None
+    def signUp(self):
+        self.name = input("write Full name").upper()
+        self.user_name = input("Write  user_name")
+        if self.name == '' or self.user_name =='' :
+            print('Wronge Input')
+        else:
+            flag = True
+            for col in ws['B']:
+                if col.value == self.user_name:
+                    flag = False
+                    print("This User already exist")
+            if flag:
+                ws.cell(row=ws.max_row + 1, column=1).value = self.name
+                ws2.cell(row=1, column=ws2.max_column + 1).value = self.name
+                ws3.cell(row=1, column=ws2.max_column).value = self.name
+                ws4.cell(row=1, column=ws2.max_column).value = self.name
+                ws5.cell(row=1, column=ws5.max_column+2).value = self.name
+                ws.cell(row=ws.max_row, column=2).value = self.user_name
+                ws.cell(row=ws.max_row, column=8).value = input("write Password")
+                ws.cell(row=ws.max_row, column=3).value = input("write Date of Birth")
+                ws.cell(row=ws.max_row, column=9).value = False
+                ws.cell(row=ws.max_row, column=10).value = False
+                ws.cell(row=ws.max_row, column=11).value = False
+                wb.save("Facebook.xlsx")
+                print("\nYour account SUCCESSFUL Created\n")
+                Facebook()
+    def searchMember(self):
+
+        name = input('Write the name of member: ').upper()
+        flag = True
+        for ro in range(len(ws['A'])):
+            if ws['A'][ro].value == name:
+                flag = False
+                pre = int(input(f"For {name}'Profile press 1,For Exit press 2: "))
+                if pre == 1:
+                   User.showProfile(self,ro)
+                elif pre == 2:
+                    Facebook.functionalty(self)
+                else:
+                    print("Give correct input")
+        if flag:
+            print("This user not exist")
+        Facebook.functionalty(self)
+    def showProfile(self,ro):
+        for j in range(1, 8):
+            print(ws.cell(row=1, column=j).value, ":", end="")
+            print(ws.cell(row=ro + 1, column=j).value)
+        Facebook.functionalty(self)
+class Facebook:
+    def __init__(self):
+        self.user_name = None
+        self.loginStatus = False
+
+        inp = input('Press 1 for Login or 2 fo Signup:')
+        if inp == '1':
+            Facebook.login(self)
+        elif inp == '2':
+            User.signUp(self)
+        else:
+            print('Wrong input')
+            Facebook()
+    def login(self):
+        self.user_name = input("Wtrite user_name")
+        password = input("Wtrite password")
+        for col in range(len(ws['B'])):
+            if ws['B'][col].value == self.user_name and ws['H'][col].value == password:
+                self.name = ws['A'][col].value
+                self.i = col
+                print("Successfully Login")
+                self.loginStatus = True
+                Facebook.notification(self)
+                wb.save("Facebook.xlsx")
+
+        if not self.loginStatus:
+            print("Wrong user name or password")
+            Facebook()
+        if self.loginStatus:
+            Facebook.functionalty(self)
+    def notification(self):
+        if ws['I'][self.i].value:
+            print("You have new friend request")
+            ws['I'][self.i].value = False
+        if ws['j'][self.i].value:
+            print("You have new message")
+            ws['j'][self.i].value = False
+        if ws['K'][self.i].value:
+            print("You have new comment on your post")
+            ws['K'][self.i].value = False
+    def editinfo(self, a):
+        for col in range(len(ws['B'])):
+            if ws['B'][col].value == a:
+                ws.cell(row=col + 1, column=4).value = input("Write  Job: ")
+                ws.cell(row=col + 1, column=5).value = input("write Education: ")
+                ws.cell(row=col + 1, column=6).value = input("write  Status: ")
+                ws.cell(row=col + 1, column=7).value = input("write  Other: ")
+                wb.save("Facebook.xlsx")
+                print("SUCCESSFUL profile edited")
+        Facebook.functionalty(self)
+    def logOut(self):
+        self.loginStatus = False
+        print("\nSuccessfully Logout\n")
+        Facebook()
+    def functionalty(self):
+        pre = int(input("\nPress logout = 1 ,Profile = 2"
+                        "\nSearch Member = 3,Friend Request = 4"
+                        "\n Messages = 5,Post= 6\n"))
+
+        if pre == 1:
+            Facebook.logOut(self)
+        elif pre == 2:
+            inp = input("Press 1 For Show, 2 For Edit Profil : ")
+            if inp == '1':
+                User.showProfile(self,self.i)
+            elif inp == '2':
+                Facebook.editinfo(self, self.user_name)
+            else:
+                pass
+        elif pre == 3:
+            # Facebook.privateFriend(self)
+            User.searchMember(self)
+        elif pre == 4:
+            inp = input("Press 1 For Send Request, 2 For See and Accept : ")
+            if inp == '1':
+                Facebook.friendRequest(self)
+            elif inp == '2':
+                Facebook.acceptrequest(self)
+            else:
+                pass
+        elif pre == 5:
+            inp = input("Press 1 For Send , 2 For See Messages : ")
+            if inp == '1':
+                Facebook.send_message(self)
+            elif inp == '2':
+                Facebook.vewMessages(self)
+            else:
+                pass
+        elif pre == 6:
+            inp = input("Press 1 For Posting, 2 For See And Commenting,\nPost Search by Word = 3: ")
+            if inp == '1':
+                Facebook.posting(self)
+            elif inp == '2':
+                Facebook.showpost(self)
+            elif inp == '3':
+                Facebook.searchByWord(self)
+            else:
+                pass
+        else:
+            Facebook.functionalty()
+    def vewMessages(self):
+        for i in range(2,ws4.max_row+1):
+            print(ws4.cell(row= i, column=self.i+1).value)
+        Facebook.functionalty(self)
+    def friendRequest(self):
+        name = input("Write the name of user:").upper()
+        flag = True
+        for k in range(1,ws2.max_column+2):
+            if ws2.cell(row=1, column=k).value == name and k != self.i + 1:
+                if Facebook.alreadyfriend(self,k):
+                    ws.cell(row=k, column=9).value = True
+                    flag = False
+                    l = 1
+                    while l <= ws2.max_row + 3:
+                        if ws2.cell(row=l, column=k).value == None:
+                            ws2.cell(row=l, column=k).value = self.name
+                            print("Sended")
+                            wb.save("Facebook.xlsx")
+                            break
+                        l += 1
+                else:
+                    print("you are already send friend request")
+                k += 1
+        if flag:
+            print("This user dos't exist")
+        Facebook.functionalty(self)
+    def alreadyfriend(self,a):
+        for i in range(2,ws.max_row+1):
+            if ws2.cell(row=i, column=a).value == self.name or ws3.cell(row=i, column=a).value == self.name:
+                return False
+        return True
+    def acceptrequest(self):
+        l = 1
+        while l <= ws2.max_row + 1:
+            val = ws2.cell(row=l + 1, column=self.i + 1).value
+            if val != None:
+                print(f'To accept the Friend request of {val}')
+                pre = input('press 1,2 reject else press any key')
+                if pre == '1':
+                    ws2.cell(row=l + 1, column=self.i + 1).value = None
+                    for m in range(ws3.max_row + 1):
+                        if ws3.cell(row=m + 1, column=self.i + 1).value == None:
+                            ws3.cell(row=m + 1, column=self.i + 1).value = val
+                            k = 1
+                            while k <= ws3.max_column:
+                                if ws3.cell(row=1, column=k).value == val:
+                                    li = 1
+                                    while li <= ws3.max_row + 1:
+                                        if ws3.cell(row=li + 1, column=k).value == None:
+                                            ws3.cell(row=li + 1, column=k).value = self.name
+                                            wb.save("Facebook.xlsx")
+                                            print('accepted')
+                                            break
+                                        li += 1
+                                k += 1
+                elif pre == '2':
+                    ws2.cell(row=l + 1, column=self.i + 1).value=None
+                    print("rejected")
+                    wb.save("Facebook.xlsx")
+
+            l += 1
+        Facebook.functionalty(self)
+    def send_message(self):
+        flag = True
+        message = str(input(" Type message ........ "))
+        if message == '':
+            print("Please Enter valid message")
+            return Facebook.functionalty(self)
+        To = input(" TO : ").upper()
+        From = self.name
+        for j in range(len(ws4['1'])):
+            if ws4['1'][j].value == To:
+                flag = False
+                k = 1
+                while k <= ws4.max_row+1:
+                    if ws4.cell(row= k, column=j+1).value == None:
+                        ws4.cell(row= k, column=j+1).value = message + "   from  :  " + From
+                        ws.cell(row=j+1, column=10).value = True
+                        wb.save('Facebook.xlsx')
+                        print('Message sended')
+                        break
+                    k += 1
+
+        if flag:
+            print(" ************ This user not exist! ********** ")
+        Facebook.functionalty(self)
+    def posting(self):
+        print(" Welcome ", self.name, " !  To Posting-------  ")
+        for i in range(1,len(ws5['1'])):
+            if ws5['1'][i].value == self.name:
+                k = 1
+                while k <= ws5.max_row:
+                    if ws5.cell(row=k + 1, column=i+1).value == None:
+                        user_post_choice = input(" Write a post : ")
+                        if user_post_choice == '':
+                            print('Enter something\nNot Posted')
+                            break
+                        ws5.cell(row=k + 1, column=i+1).value = user_post_choice
+                        wb.save("Facebook.xlsx")
+                        print("Successfully Posted ")
+                        break
+                    k += 1
+        Facebook.functionalty(self)
+    def showpost(self):
+            poster = input("Enter the name of the person see post and comment on it : ").upper()
+            flag = True
+            for i in range(ws3.max_row+1):
+                if ws3.cell(row=i+1, column=self.i+1).value == poster :
+                    flag = False
+                    for E in range(len(ws5['1'])):
+                        if ws5['1'][E].value == poster:
+                            Y = 2
+                            while Y <= ws5.max_row+1:
+                                if ws5.cell(row= Y, column=E+1).value == None:
+                                    print("\nNo more post")
+                                    Facebook.functionalty(self)
+                                print(" ---Post is : ", ws5.cell(row=Y, column=E+1).value)
+                                pre = input("TO comment on this post press 1,2 for next post,Enter to exist ")
+                                if pre == '1':
+                                    Facebook.comment(self,Y,E)
+                                elif pre == '':
+                                    Facebook.functionalty(self)
+                                elif pre == '2':
+                                    pass
+                                Y += 1
+            if flag:
+                print(f"You can't see and comment on Post of {poster}")
+    def comment(self,Y,E):
+        user_comment = input(" Write your comment  : ")
+        if user_comment == "":
+            Facebook.functionalty(self)
+        elif ws5.cell(row=Y, column=E).value != None:
+            ws5.cell(row=Y, column=E).value += "[ " + self.name + " commented : " + user_comment + " ] \n"
+            ws.cell(row=(E/2)+1, column=11).value = True
+        else:
+            ws5.cell(row=Y, column=E).value = "[ " + self.name + " commented : " + user_comment + " ]"
+            ws.cell(row=E/2
+                    , column=11).value = True
+        wb.save("Facebook.xlsx")
+    def searchByWord(self):
+        word = input('Write Word')
+        for i in range(1,ws5.max_column+2):
+
+            for r in range(1,ws5.max_row+2):
+                if word in str(ws5.cell(row=r, column=i).value):
+                    print(f"{ws5.cell(row=1, column=i).value} posted:{ws5.cell(row=r,column=i).value}")
+
+
+Facebook()
+
+
